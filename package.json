@@ -1,0 +1,25 @@
+{
+  "name": "rpg-combat-engine",
+  "version": "1.0.0",
+  "description": "Engine de combate criado para o meu RPG usando typescript",
+  "main": "cli.ts",
+  "dependencies": {},
+  "devDependencies": {
+    "prompts": "^2.4.1",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
+  },
+  "scripts": {
+    "start": "ts-node cli.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arthurherbert/rpg-combat-engine.git"
+  },
+  "author": "Arthur Herbert Silva Melo <arthurhsmelo@ufmg.br>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arthurherbert/rpg-combat-engine/issues"
+  },
+  "homepage": "https://github.com/arthurherbert/rpg-combat-engine#readme"
+}
