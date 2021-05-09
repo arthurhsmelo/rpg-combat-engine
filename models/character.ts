@@ -1,14 +1,13 @@
-import default_char_values from "../consts/default_char_values";
-import { Act, CombatResult, NextAction } from "./combat";
 import {
+  default_char_values,
   ECharacterType,
-  IAction,
+  ESkillType,
   ICharacterDefaultValues,
   IEquipment,
-  instanceOfEquipmentWithActions,
   instanceOfEquipmentWithArmor,
   IRecord,
-} from "./utils";
+  ISkill,
+} from "../internal";
 
 export class Record {
   readonly id: string;
@@ -37,12 +36,12 @@ class EquipmentAlreadyEquipped extends Error {
 }
 
 export class Character extends Record {
-  private _default_values: ICharacterDefaultValues;
-  private _max_hp: number;
-  private _current_hp: number;
-  private _armor: number;
-  private _type: ECharacterType;
-  private _equipped_equipment: IEquipment[] = [];
+  protected _default_values: ICharacterDefaultValues;
+  protected _max_hp: number;
+  protected _current_hp: number;
+  protected _armor: number;
+  protected _type: ECharacterType;
+  protected _equipped_equipment: IEquipment[] = [];
 
   constructor(record: IRecord, type: ECharacterType) {
     super(record);
@@ -76,7 +75,18 @@ export class Character extends Record {
   }
 
   public receive_damage(damage: number) {
-    this._current_hp -= damage;
+    let damage_taken = damage;
+    if (this._armor > 0) {
+      damage_taken = (damage / (this._armor * 4)) * damage;
+      if (this._armor < damage / 2) {
+        damage_taken = damage - this._armor;
+      }
+    }
+    this._current_hp -= damage_taken;
+  }
+
+  public receive_healing(healing: number) {
+    this._current_hp += healing;
   }
 
   private recalculate_armor() {
@@ -113,23 +123,6 @@ export class Character extends Record {
   }
   public get default_values() {
     return this._default_values;
-  }
-}
-
-export interface IArtificalIntelligence {
-  strategy: (next_action: NextAction) => CombatResult | undefined;
-}
-
-export class NPC extends Character {
-  public strategy: (next_action: NextAction) => CombatResult | undefined;
-
-  constructor(
-    record: Record,
-    type: ECharacterType,
-    ai: IArtificalIntelligence
-  ) {
-    super(record, type);
-    this.strategy = ai.strategy;
   }
 }
 
