@@ -1,4 +1,4 @@
-import { Player, IExecuteParams } from "../internal";
+import { IExecuteParams, Player } from "../../internal";
 
 export const use_item = (item_id: string) => ({
   target,

@@ -1,8 +1,6 @@
 import {
   common_verbose,
   verbose,
-  ActArguments,
-  CombatResult,
   IAction,
   instanceOfEquipmentWithActions,
   Character,
@@ -13,7 +11,7 @@ import {
   Player,
   IChildAction,
   instanceOfEffectWithActionPerTurn,
-} from "../internal";
+} from "../../internal";
 
 function shuffleArray(array: Array<any>) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -21,20 +19,6 @@ function shuffleArray(array: Array<any>) {
     [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
-}
-
-export type Act = (
-  action: IAction,
-  target: Character
-) => CombatResult | undefined;
-
-export interface NextAction {
-  who: Character;
-  available_actions: IAction[];
-  combat_state: {
-    allies: Character[];
-    enemies: Character[];
-  };
 }
 
 class ActionNotAvailable extends Error {
@@ -57,6 +41,15 @@ export interface TurnState {
   enemies: Character[];
   applyEffect: (effect: IEffect, target: Character) => void;
   active_effects: CombatEffects;
+}
+
+export interface CombatResult {
+  winner: number;
+}
+
+export interface ActArguments {
+  action: IAction;
+  target?: Character;
 }
 
 export class Combat {

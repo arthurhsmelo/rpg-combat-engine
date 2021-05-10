@@ -11,10 +11,9 @@ import {
   Character,
   action_creator,
   instanceOfItemWithActions,
-  IAction,
-  IActionWithChild,
+  EResistanceMultipler,
+  IChildAction,
 } from "../internal";
-import { EResistanceMultipler, IChildAction } from "../models/utils";
 
 export const default_char_values: {
   [key in ECharacterType]: ICharacterDefaultValues;

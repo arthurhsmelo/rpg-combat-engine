@@ -23,8 +23,8 @@ import {
   IPotion,
   use_item,
   fire_damage,
-} from "./internal";
-import { pipe } from "./utils/functional";
+  pipe,
+} from "./src/internal";
 
 const sorTuzin = new Player({
   id: "1",

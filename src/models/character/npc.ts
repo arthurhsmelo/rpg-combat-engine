@@ -4,7 +4,7 @@ import {
   TurnState,
   ActArguments,
   ECharacterType,
-} from "../internal";
+} from "../../internal";
 
 type StrategyType = (turn_state: TurnState) => ActArguments;
 export interface IArtificalIntelligence {

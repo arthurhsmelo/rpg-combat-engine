@@ -1,14 +1,12 @@
 import {
   default_char_values,
   ECharacterType,
-  ESkillType,
   ICharacterDefaultValues,
   IEquipment,
   instanceOfEquipmentWithArmor,
   IRecord,
   IResistances,
-  ISkill,
-} from "../internal";
+} from "../../internal";
 
 export class Record {
   readonly id: string;

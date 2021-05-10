@@ -5,7 +5,7 @@ import {
   ISkill,
   ESkillType,
   IItem,
-} from "../internal";
+} from "../../internal";
 
 class ItemNotFoundException extends Error {
   constructor() {

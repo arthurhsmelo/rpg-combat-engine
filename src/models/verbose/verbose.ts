@@ -1,4 +1,4 @@
-import { EActionType } from "../internal";
+import { EActionType } from "../../internal";
 
 export interface Verbose {
   action_result_label: string;

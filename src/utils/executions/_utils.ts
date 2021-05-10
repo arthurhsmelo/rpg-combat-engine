@@ -1,42 +1,37 @@
 import {
-  NPC,
-  ESkillType,
-  IListedDamage,
-  pipe,
+  Character,
+  EDamageType,
   EEffectType,
   EEquipmentType,
-  IShield,
+  ESkillType,
+  IListedDamage,
   instanceOfBlockingEffect,
-  staggeredEffect,
+  IShield,
+  NPC,
+  pipe,
   Player,
-  IExecuteParams,
-  burningEffect,
-} from "../internal";
-import Character from "../models/character";
-import { TurnState } from "../models/combat";
-import { EDamageType } from "../models/utils";
-
-const random = (min: number, max: number) => Math.random() * (max - min) + min;
+  staggeredEffect,
+  TurnState,
+} from "../../internal";
 
 const NPC_DAMAGE_RANGE = {
   MIN: 0.75,
   MAX: 1,
 };
-
 const PLAYER_DAMAGE_RANGE = {
   MIN: 0.25,
   MAX: 0.55,
 };
-
 const PARRY_RANGE = {
   MIN: 0,
   MAX: 0.5,
 };
-
 const SKILL_MULTIPLIER = 0.006;
 const BLOCK_MULTIPLIER = 0.005;
 
-const calculate_damage = (
+const random = (min: number, max: number) => Math.random() * (max - min) + min;
+
+export const calculate_damage = (
   listed_damage: IListedDamage,
   target: Character,
   turn_state: TurnState,
@@ -131,47 +126,4 @@ const calculate_damage = (
     apply_damage_type_bonus(listed_damage.type),
     apply_blocking_penalty
   )(listed_damage.value);
-};
-
-export const damage = (
-  listed_damages: IListedDamage[],
-  related_skill?: ESkillType
-) => ({ target, turn_state }: IExecuteParams) => {
-  const total_damage = listed_damages.reduce((acc, curr) => {
-    return acc + calculate_damage(curr, target, turn_state, related_skill);
-  }, 0);
-
-  target.receive_damage(total_damage);
-  return total_damage;
-};
-
-export const fire_damage = (
-  listed_damage: IListedDamage,
-  related_skill?: ESkillType
-) => ({ target, turn_state }: IExecuteParams) => {
-  const damage = calculate_damage(
-    listed_damage,
-    target,
-    turn_state,
-    related_skill
-  );
-
-  console.log("TOTAL BURNING DAMAGE", damage);
-  turn_state.applyEffect(burningEffect(damage), target);
-  return true;
-};
-
-export const heal = (healing: number) => ({ target }: IExecuteParams) => {
-  target.receive_healing(healing);
-  return healing;
-};
-
-export const use_item = (item_id: string) => ({
-  target,
-  turn_state,
-}: IExecuteParams) => {
-  if (turn_state.who instanceof Player) {
-    turn_state.who.update_item_quantity(item_id, -1);
-  }
-  return { target, turn_state };
 };

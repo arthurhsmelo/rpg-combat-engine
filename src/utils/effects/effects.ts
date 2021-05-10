@@ -1,12 +1,11 @@
 import {
-  EDamageType,
   IBlockingEffect,
   IBurningEffect,
   IEffect,
   IEffectActionParams,
   TurnState,
   EEffectType,
-} from "../internal";
+} from "../../internal";
 
 export const blockingEffect = (turn_state: TurnState): IBlockingEffect => ({
   type: EEffectType.BLOCKING,

@@ -1,4 +1,4 @@
-import { Character } from "../internal";
+import { Character } from "../../internal";
 
 export const hostile = () => (targets: {
   allies: Character[];
