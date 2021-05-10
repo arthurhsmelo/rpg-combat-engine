@@ -6,11 +6,13 @@ export enum EActionType {
   HELP = "HELP",
   HEAL = "HEAL",
   USE_ITEM = "USE_ITEM",
+  SPELL = "SPELL",
   NULL = "NULL",
 }
 
 interface IActionResult {
   [EActionType.PHYSICAL_ATTACK]: number;
+  [EActionType.SPELL]: boolean;
   [EActionType.HEAL]: number;
   [EActionType.HELP]: boolean;
   [EActionType.USE_ITEM]: boolean;
@@ -27,7 +29,7 @@ export interface IBaseAction<T extends EActionType = EActionType>
   extends IRecord {
   type: T;
   related_skill?: ESkillType;
-  execute: ({ target, turn_state }: IExecuteParams) => ActionResult<T>;
+  execute: (args: IExecuteParams) => ActionResult<T>;
   get_available_targets: (targets: {
     allies: Character[];
     enemies: Character[];

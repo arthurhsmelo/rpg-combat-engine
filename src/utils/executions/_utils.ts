@@ -65,7 +65,7 @@ export const calculate_damage = (
           random(PARRY_RANGE.MIN, PARRY_RANGE.MAX) + BLOCK_MULTIPLIER * level;
         if (Math.random() <= parry) {
           // Apply Staggered effect to who is attacking
-          turn_state.applyEffect(staggeredEffect(), who);
+          turn_state.apply_effect(staggeredEffect(), who);
           result = 0;
         }
       }
@@ -73,7 +73,7 @@ export const calculate_damage = (
       // Gets staggered
       if (damage > blocked_damage * 4) {
         // Apply Staggered effect to blocker
-        turn_state.applyEffect(staggeredEffect(), blocking.who_is_blocking);
+        turn_state.apply_effect(staggeredEffect(), blocking.who_is_blocking);
         result = damage;
       }
     }
@@ -117,6 +117,7 @@ export const calculate_damage = (
     }
 
     const result = Math.min(rng + skill_level, 1) * damage;
+    console.log(damage, result, rng, skill_level);
     return result;
   };
 

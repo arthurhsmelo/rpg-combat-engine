@@ -6,6 +6,7 @@ import {
   instanceOfEquipmentWithArmor,
   IRecord,
   IResistances,
+  ISpell,
 } from "../../internal";
 
 export class Record {
@@ -42,6 +43,9 @@ export class Character extends Record {
   protected _type: ECharacterType;
   protected _equipped_equipment: IEquipment[];
   protected _resistances: IResistances;
+  protected _max_mana: number;
+  protected _current_mana: number;
+  protected _spells: ISpell[];
 
   constructor(record: IRecord, type: ECharacterType) {
     super(record);
@@ -51,6 +55,9 @@ export class Character extends Record {
     this._armor = this._default_values.armor;
     this._resistances = this._default_values.resistances;
     this._equipped_equipment = [];
+    this._spells = [];
+    this._max_mana = 10;
+    this._current_mana = 10;
   }
 
   public equip(equipment: IEquipment) {
@@ -90,6 +97,17 @@ export class Character extends Record {
     this._current_hp += healing;
   }
 
+  public use_mana(mana: number) {
+    this._current_mana -= mana;
+  }
+
+  public add_spell(spell: ISpell) {
+    const spell_index = this.find_spell_index_by_id(spell.id);
+    if (spell_index === -1) {
+      this._spells = [...this._spells, spell];
+    }
+  }
+
   private recalculate_armor() {
     const default_armor = this._default_values.armor;
     this._armor = this._equipped_equipment.reduce((armor, equip) => {
@@ -105,6 +123,10 @@ export class Character extends Record {
     return this._equipped_equipment.findIndex(
       (equipment) => equipment.id === equipment_id
     );
+  }
+
+  private find_spell_index_by_id(spell_id: string) {
+    return this._spells.findIndex((spell) => spell.id === spell_id);
   }
 
   public get max_hp() {
@@ -124,6 +146,12 @@ export class Character extends Record {
   }
   public get resistances() {
     return this._resistances;
+  }
+  public get current_mana() {
+    return this._current_mana;
+  }
+  public get spells() {
+    return this._spells;
   }
   public get default_values() {
     return this._default_values;

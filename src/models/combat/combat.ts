@@ -11,6 +11,8 @@ import {
   Player,
   IChildAction,
   instanceOfEffectWithActionPerTurn,
+  instanceOfEffectWithActionAfterEnd,
+  IExecuteParams,
 } from "../../internal";
 
 function shuffleArray(array: Array<any>) {
@@ -39,7 +41,7 @@ export interface TurnState {
   available_actions: IAction[];
   allies: Character[];
   enemies: Character[];
-  applyEffect: (effect: IEffect, target: Character) => void;
+  apply_effect: (effect: IEffect, target: Character) => void;
   active_effects: CombatEffects;
 }
 
@@ -93,7 +95,7 @@ export class Combat {
         allies,
         enemies,
         active_effects: this.active_effects,
-        applyEffect: this.applyEffect.bind(this),
+        apply_effect: this.apply_effect.bind(this),
       };
       let action: IAction, target: Character | undefined;
       if (who instanceof NPC) {
@@ -159,31 +161,42 @@ export class Combat {
   }
 
   private update_active_effects() {
+    const queue_after_end: Function[] = [];
     this.active_effects = this.active_effects.filter((effect) => {
+      const target = this.get_char_by_id(effect.char_id) as Character;
       const round_start =
         effect.remaining_turns % this.combat_queue.length === 0;
       if (instanceOfEffectWithActionPerTurn(effect) && round_start) {
-        const target = this.get_char_by_id(effect.char_id);
-        if (target) {
-          effect.turn_action({ target });
-        }
+        effect.turn_action({ target });
       }
       effect.remaining_turns -= 1;
+      if (
+        instanceOfEffectWithActionAfterEnd(effect) &&
+        effect.remaining_turns === 0
+      ) {
+        queue_after_end.push(() => {
+          effect.action_after_end({
+            target: effect.target,
+            turn_state: { ...this.turn_state, who: target },
+          });
+        });
+      }
       return effect.remaining_turns > 0;
     });
+    queue_after_end.forEach((afe) => afe());
   }
 
-  private applyEffect = (effect: IEffect, target: Character) => {
+  private apply_effect = (effect: IEffect, target: Character) => {
     const active_effect = this.active_effects.find(
       (eff) => eff.type === effect.type
     );
     if (active_effect) {
       active_effect.remaining_turns +=
-        effect.number_of_rounds * this.combat_queue.length;
+        effect.duration * this.combat_queue.length;
     } else {
       this.active_effects.push({
         char_id: target.id,
-        remaining_turns: effect.number_of_rounds * this.combat_queue.length,
+        remaining_turns: effect.duration * this.combat_queue.length,
         ...effect,
       });
     }
@@ -226,16 +239,15 @@ export class Combat {
       ];
     } else {
       const default_available_actions = who.default_values.available_actions;
-      const available_actions = who.equipped_equipment.reduce(
-        (available_actions, equip) => {
+      const available_actions = who.equipped_equipment
+        .reduce((available_actions, equip) => {
           if (instanceOfEquipmentWithActions(equip)) {
             return available_actions.concat(equip.available_actions);
           } else {
             return available_actions;
           }
-        },
-        default_available_actions
-      );
+        }, default_available_actions)
+        .concat(...who.spells);
       return available_actions;
     }
   }

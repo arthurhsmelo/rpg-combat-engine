@@ -24,6 +24,9 @@ import {
   use_item,
   fire_damage,
   pipe,
+  ESpellComponent,
+  ISpell,
+  use_spell,
 } from "./src/internal";
 
 const sorTuzin = new Player({
@@ -92,7 +95,7 @@ const shield: IShield = {
       label: "BQ",
       description: "Você levanta seu escudo para bloquear o próximo ataque",
       execute: ({ target, turn_state }) => {
-        turn_state.applyEffect(blockingEffect(turn_state), target);
+        turn_state.apply_effect(blockingEffect(turn_state), target);
         return true;
       },
       get_available_targets: friendly(),
@@ -131,20 +134,35 @@ const molotov: IPotion = {
       name: "Incendiar",
       label: "IC",
       description: "Aplica 3 de dano de fogo por turno, por 3 turnos",
-      execute: pipe(
-        use_item("MOLOTOV"),
-        fire_damage({ type: EDamageType.FIRE, value: 10 })
-      ),
+      execute: pipe(use_item("MOLOTOV"), fire_damage(10)),
       get_available_targets: hostile(),
       type: EActionType.DOT,
     }),
   ],
+};
+const fire_ball: ISpell = {
+  id: "FIREBALL",
+  name: "Fire Ball",
+  description:
+    "Você se concentra e arremessa uma bola de fogo, causando 20 de dano de fogo em divididos em 3 turnos",
+  label: "FB",
+  type: EActionType.SPELL,
+  related_skill: ESkillType.SPELL_CASTING,
+  mana_cost: 10,
+  casting_time: 1,
+  components: [ESpellComponent.SOMATIC, ESpellComponent.VERBAL],
+  after_cast: fire_damage(20, ESkillType.SPELL_CASTING),
+  get_available_targets: hostile(),
+  get execute() {
+    return use_spell(this);
+  },
 };
 
 sorTuzin.equip(sword);
 sorTuzin.equip(shield);
 sorTuzin.add_item_to_inventory(healing_potion);
 sorTuzin.add_item_to_inventory(molotov, 2);
+sorTuzin.add_spell(fire_ball);
 
 (async () => {
   const { combat, first_round } = new Combat([sorTuzin], [javali]).init();
@@ -160,7 +178,10 @@ sorTuzin.add_item_to_inventory(molotov, 2);
         active_effects,
       } = round.value as TurnState;
 
-      console.log(`\n${who.name}\n`);
+      console.log(`\n
+        - ${who.name}: ${who.current_hp}\n
+        - ${enemies[0].name}: ${enemies[0].current_hp}\n
+      \n`);
       if (active_effects.length) {
         console.log(`\nActive Effects:\n`);
         console.log(

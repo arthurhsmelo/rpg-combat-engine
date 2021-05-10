@@ -33,9 +33,7 @@ export const default_char_values: {
       },
     ],
     skills: [],
-    resistances: {
-      [EDamageType.FIRE]: EResistanceMultipler.VERY_WEAK,
-    },
+    resistances: {},
   },
   PLAYER: {
     base_hp: 25,

@@ -6,8 +6,10 @@ export * from "./types/action.types";
 export * from "./types/skill.types";
 export * from "./types/item.types";
 export * from "./types/effect.types";
+export * from "./types/spell.types";
 
 // Utils
+export * from "./utils/spells/_utils";
 export * from "./utils/executions/_utils";
 export * from "./utils/executions/execution_side_effects";
 export * from "./utils/executions/executions";
