@@ -4,7 +4,7 @@ export interface Verbose {
   action_result_label: string;
   action_result_unit: string;
 }
-export const verbose: { [key in EActionType]: Verbose } = {
+export const verbose: { [key in EActionType]?: Verbose } = {
   [EActionType.PHYSICAL_ATTACK]: {
     action_result_label: "causando",
     action_result_unit: "de dano",

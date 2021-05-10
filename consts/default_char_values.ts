@@ -14,7 +14,7 @@ import {
   IAction,
   IActionWithChild,
 } from "../internal";
-import { IChildAction } from "../models/utils";
+import { EResistanceMultipler, IChildAction } from "../models/utils";
 
 export const default_char_values: {
   [key in ECharacterType]: ICharacterDefaultValues;
@@ -28,12 +28,15 @@ export const default_char_values: {
         name: "Morder",
         description: "Mordida feroz",
         label: "MD",
-        execute: damage([{ type: EDamageType.BLUNT, value: 10 }]),
+        execute: damage([{ type: EDamageType.BLUNT, value: 8 }]),
         get_available_targets: hostile(),
         type: EActionType.PHYSICAL_ATTACK,
       },
     ],
     skills: [],
+    resistances: {
+      [EDamageType.FIRE]: EResistanceMultipler.VERY_WEAK,
+    },
   },
   PLAYER: {
     base_hp: 25,
@@ -86,12 +89,7 @@ export const default_char_values: {
         type: EActionType.USE_ITEM,
       }),
     ],
-    skills: [
-      {
-        type: ESkillType.UNARMED,
-        level: 0,
-        xp: 0,
-      },
-    ],
+    skills: [],
+    resistances: {},
   },
 };

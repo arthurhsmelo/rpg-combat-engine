@@ -6,6 +6,7 @@ import {
   IEquipment,
   instanceOfEquipmentWithArmor,
   IRecord,
+  IResistances,
   ISkill,
 } from "../internal";
 
@@ -41,7 +42,8 @@ export class Character extends Record {
   protected _current_hp: number;
   protected _armor: number;
   protected _type: ECharacterType;
-  protected _equipped_equipment: IEquipment[] = [];
+  protected _equipped_equipment: IEquipment[];
+  protected _resistances: IResistances;
 
   constructor(record: IRecord, type: ECharacterType) {
     super(record);
@@ -49,6 +51,7 @@ export class Character extends Record {
     this._type = type;
     this._max_hp = this._current_hp = this._default_values.base_hp;
     this._armor = this._default_values.armor;
+    this._resistances = this._default_values.resistances;
     this._equipped_equipment = [];
   }
 
@@ -74,9 +77,9 @@ export class Character extends Record {
     this.recalculate_armor();
   }
 
-  public receive_damage(damage: number) {
+  public receive_damage(damage: number, ignore_armor: boolean = false) {
     let damage_taken = damage;
-    if (this._armor > 0) {
+    if (this._armor > 0 && !ignore_armor) {
       damage_taken = (damage / (this._armor * 4)) * damage;
       if (this._armor < damage / 2) {
         damage_taken = damage - this._armor;
@@ -120,6 +123,9 @@ export class Character extends Record {
   }
   public get type() {
     return this._type;
+  }
+  public get resistances() {
+    return this._resistances;
   }
   public get default_values() {
     return this._default_values;

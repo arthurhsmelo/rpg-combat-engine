@@ -1,18 +1,20 @@
 import {
-  Character,
-  TurnState,
   NPC,
   ESkillType,
   IListedDamage,
   pipe,
-  EActiveEffectType,
+  EEffectType,
   EEquipmentType,
   IShield,
   instanceOfBlockingEffect,
   staggeredEffect,
   Player,
   IExecuteParams,
+  burningEffect,
 } from "../internal";
+import Character from "../models/character";
+import { TurnState } from "../models/combat";
+import { EDamageType } from "../models/utils";
 
 const random = (min: number, max: number) => Math.random() * (max - min) + min;
 
@@ -34,26 +36,17 @@ const PARRY_RANGE = {
 const SKILL_MULTIPLIER = 0.006;
 const BLOCK_MULTIPLIER = 0.005;
 
-export const damage = (
-  listed_damages: IListedDamage[],
+const calculate_damage = (
+  listed_damage: IListedDamage,
+  target: Character,
+  turn_state: TurnState,
   related_skill?: ESkillType
-) => ({ target, turn_state }: IExecuteParams) => {
-  let rng: number;
-  let skill: number = 0;
+) => {
   const { who, active_effects } = turn_state;
-
-  if (who instanceof NPC) {
-    rng = random(NPC_DAMAGE_RANGE.MIN, NPC_DAMAGE_RANGE.MAX);
-  } else if (who instanceof Player && related_skill) {
-    rng = random(PLAYER_DAMAGE_RANGE.MIN, PLAYER_DAMAGE_RANGE.MAX);
-    const _skill = who.skills.find((s) => s.type === related_skill);
-    skill = SKILL_MULTIPLIER * (_skill?.level ?? 0);
-  }
 
   const apply_blocking_penalty = (damage: number) => {
     const blocking = active_effects.find(
-      (eff) =>
-        eff.char_id === target.id && eff.type === EActiveEffectType.BLOCKING
+      (eff) => eff.char_id === target.id && eff.type === EEffectType.BLOCKING
     );
     let result = damage;
     if (blocking && instanceOfBlockingEffect(blocking)) {
@@ -92,11 +85,19 @@ export const damage = (
     return Math.max(result, 0);
   };
 
+  const apply_damage_type_bonus = (type: EDamageType) => (damage: number) => {
+    const resistance = target.resistances[type];
+    let result = damage;
+    if (resistance) {
+      result = damage * resistance;
+    }
+    return result;
+  };
+
   const apply_stagger_bonus = (damage: number) => {
     const staggered = active_effects.find(
       (effect) =>
-        effect.char_id === target.id &&
-        effect.type === EActiveEffectType.STAGGERED
+        effect.char_id === target.id && effect.type === EEffectType.STAGGERED
     );
     let result = damage;
     if (staggered) {
@@ -106,19 +107,58 @@ export const damage = (
   };
 
   const rng_damage = (damage: number) => {
-    const result = Math.min(rng + skill, 1) * damage;
+    let rng: number = 0;
+    let skill_level: number = 0;
+
+    if (who instanceof NPC) {
+      rng = random(NPC_DAMAGE_RANGE.MIN, NPC_DAMAGE_RANGE.MAX);
+    } else if (who instanceof Player) {
+      rng = random(PLAYER_DAMAGE_RANGE.MIN, PLAYER_DAMAGE_RANGE.MAX);
+
+      if (related_skill) {
+        const skill = who.skills.find((s) => s.type === related_skill);
+        skill_level = SKILL_MULTIPLIER * (skill?.level ?? 0);
+      }
+    }
+
+    const result = Math.min(rng + skill_level, 1) * damage;
     return result;
   };
 
-  const calculate_damage = (dmg: IListedDamage) =>
-    pipe(rng_damage, apply_stagger_bonus, apply_blocking_penalty)(dmg.value);
+  return pipe(
+    rng_damage,
+    apply_stagger_bonus,
+    apply_damage_type_bonus(listed_damage.type),
+    apply_blocking_penalty
+  )(listed_damage.value);
+};
 
+export const damage = (
+  listed_damages: IListedDamage[],
+  related_skill?: ESkillType
+) => ({ target, turn_state }: IExecuteParams) => {
   const total_damage = listed_damages.reduce((acc, curr) => {
-    return acc + calculate_damage(curr);
+    return acc + calculate_damage(curr, target, turn_state, related_skill);
   }, 0);
 
   target.receive_damage(total_damage);
   return total_damage;
+};
+
+export const fire_damage = (
+  listed_damage: IListedDamage,
+  related_skill?: ESkillType
+) => ({ target, turn_state }: IExecuteParams) => {
+  const damage = calculate_damage(
+    listed_damage,
+    target,
+    turn_state,
+    related_skill
+  );
+
+  console.log("TOTAL BURNING DAMAGE", damage);
+  turn_state.applyEffect(burningEffect(damage), target);
+  return true;
 };
 
 export const heal = (healing: number) => ({ target }: IExecuteParams) => {

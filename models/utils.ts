@@ -5,15 +5,30 @@ export enum ECharacterType {
   BOAR = "BOAR",
 }
 
+export enum EResistanceMultipler {
+  VERY_WEAK = 2,
+  WEAK = 1.5,
+  NEUTRAL = 1,
+  STRONG = 0.5,
+  VERY_STRONG = 0.25,
+  IMMUNE = 0,
+}
+
+export type IResistances = {
+  [damage_type in EDamageType]?: EResistanceMultipler;
+};
+
 export interface ICharacterDefaultValues {
   base_hp: number;
   armor: number;
   available_actions: IAction[];
   skills: ISkill[];
+  resistances: IResistances;
 }
 
 export enum EActionType {
   PHYSICAL_ATTACK = "PHYSICAL_ATTACK",
+  DOT = "DOT",
   HELP = "HELP",
   HEAL = "HEAL",
   USE_ITEM = "USE_ITEM",
@@ -37,6 +52,7 @@ interface IActionResult {
   [EActionType.HEAL]: number;
   [EActionType.HELP]: boolean;
   [EActionType.USE_ITEM]: boolean;
+  [EActionType.DOT]: boolean;
   [EActionType.NULL]: boolean;
 }
 export type ActionResult<T extends EActionType> = IActionResult[T];
@@ -110,6 +126,7 @@ export enum EDamageType {
   SLASH = "SLASH",
   BLUNT = "BLUNT",
   PIERCE = "PIERCE",
+  FIRE = "FIRE",
 }
 export interface IListedDamage {
   type: EDamageType;
@@ -130,17 +147,32 @@ export interface ISkill {
   level: number;
   xp: number;
 }
-export enum EActiveEffectType {
+export enum EEffectType {
   "STAGGERED" = "STAGGERED",
   "BLOCKING" = "BLOCKING",
+  "BURNING" = "BURNING",
 }
-export interface IActiveEffect {
-  type: EActiveEffectType;
+export interface IEffect {
+  type: EEffectType;
   blocks_action: boolean;
   number_of_rounds: number;
 }
-export interface IBlockingEffect extends IActiveEffect {
-  type: EActiveEffectType.BLOCKING;
+
+export interface IEffectActionParams {
+  target: Character;
+}
+export interface IEffectWithActionPerTurn extends IEffect {
+  turn_action: (args: IEffectActionParams) => void;
+}
+export const instanceOfEffectWithActionPerTurn = (
+  object: Object
+): object is IEffectWithActionPerTurn => object.hasOwnProperty("turn_action");
+
+export interface IBurningEffect extends IEffectWithActionPerTurn {
+  type: EEffectType.BURNING;
+}
+export interface IBlockingEffect extends IEffect {
+  type: EEffectType.BLOCKING;
   who_is_blocking: Character;
 }
 export const instanceOfBlockingEffect = (

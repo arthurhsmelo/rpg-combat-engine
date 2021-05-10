@@ -7,12 +7,13 @@ import {
   instanceOfEquipmentWithActions,
   Character,
   NPC,
-  IActiveEffect,
+  IEffect,
   EActionType,
   action_creator,
   Player,
+  IChildAction,
+  instanceOfEffectWithActionPerTurn,
 } from "../internal";
-import { IChildAction } from "./utils";
 
 function shuffleArray(array: Array<any>) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -42,11 +43,11 @@ class ActionNotAvailable extends Error {
   }
 }
 
-export type CombatActiveEffects = Array<
+export type CombatEffects = Array<
   {
     char_id: string;
     remaining_turns: number;
-  } & IActiveEffect
+  } & IEffect
 >;
 
 export interface TurnState {
@@ -54,8 +55,8 @@ export interface TurnState {
   available_actions: IAction[];
   allies: Character[];
   enemies: Character[];
-  applyEffect: (effect: IActiveEffect, target: Character) => void;
-  active_effects: CombatActiveEffects;
+  applyEffect: (effect: IEffect, target: Character) => void;
+  active_effects: CombatEffects;
 }
 
 export class Combat {
@@ -66,7 +67,7 @@ export class Combat {
   private group_2: Character[];
   private verbose: boolean;
   private turn_state: TurnState;
-  private active_effects: CombatActiveEffects;
+  private active_effects: CombatEffects;
 
   constructor(
     group_1: Character[],
@@ -147,11 +148,11 @@ export class Combat {
             " " +
             target.name +
             " " +
-            verbose[action.type].action_result_label +
+            verbose[action.type]?.action_result_label +
             " " +
             action_result.toFixed(2) +
             " " +
-            verbose[action.type].action_result_unit +
+            verbose[action.type]?.action_result_unit +
             "\n"
         );
       }
@@ -165,13 +166,21 @@ export class Combat {
   }
 
   private update_active_effects() {
-    this.active_effects = this.active_effects.filter((item) => {
-      item.remaining_turns -= 1;
-      return item.remaining_turns > 0;
+    this.active_effects = this.active_effects.filter((effect) => {
+      const round_start =
+        effect.remaining_turns % this.combat_queue.length === 0;
+      if (instanceOfEffectWithActionPerTurn(effect) && round_start) {
+        const target = this.get_char_by_id(effect.char_id);
+        if (target) {
+          effect.turn_action({ target });
+        }
+      }
+      effect.remaining_turns -= 1;
+      return effect.remaining_turns > 0;
     });
   }
 
-  private applyEffect = (effect: IActiveEffect, target: Character) => {
+  private applyEffect = (effect: IEffect, target: Character) => {
     const active_effect = this.active_effects.find(
       (eff) => eff.type === effect.type
     );
@@ -245,6 +254,10 @@ export class Combat {
     } else {
       return { allies: this.group_2, enemies: this.group_1 };
     }
+  }
+
+  private get_char_by_id(char_id: string) {
+    return this.combat_queue.find((char) => char.id === char_id);
   }
 
   public get result() {

@@ -22,6 +22,7 @@ import {
   EItemType,
   IPotion,
   use_item,
+  fire_damage,
 } from "./internal";
 import { pipe } from "./utils/functional";
 
@@ -55,6 +56,10 @@ const sword: IWeapon = {
     {
       type: EDamageType.SLASH,
       value: 10,
+    },
+    {
+      type: EDamageType.BLUNT,
+      value: 5,
     },
   ],
   get available_actions() {
@@ -100,7 +105,7 @@ const healing_potion: IPotion = {
   id: "POTION",
   name: "Poção de cura",
   label: "PC",
-  description: "Uma poção comum que cura 10 pontos de vida",
+  description: "Um frasco com um líquido vermelho",
   type: EItemType.POTION,
   available_actions: [
     action_creator({
@@ -108,15 +113,30 @@ const healing_potion: IPotion = {
       name: "Curar",
       label: "PC",
       description: "Cura 10 pontos de vida",
-      // execute: (target: Character, turn_state: TurnState) => {
-      //   if (turn_state.who instanceof Player) {
-      //     use_item(turn_state.who, );
-      //   }
-      //   return heal(10)(target);
-      // },
       execute: pipe(use_item("POTION"), heal(10)),
       get_available_targets: friendly(),
       type: EActionType.HEAL,
+    }),
+  ],
+};
+const molotov: IPotion = {
+  id: "MOLOTOV",
+  name: "Molotov",
+  label: "MV",
+  description: "Uma garrafa em chamas",
+  type: EItemType.POTION,
+  available_actions: [
+    action_creator({
+      id: "FIRE",
+      name: "Incendiar",
+      label: "IC",
+      description: "Aplica 3 de dano de fogo por turno, por 3 turnos",
+      execute: pipe(
+        use_item("MOLOTOV"),
+        fire_damage({ type: EDamageType.FIRE, value: 10 })
+      ),
+      get_available_targets: hostile(),
+      type: EActionType.DOT,
     }),
   ],
 };
@@ -124,6 +144,7 @@ const healing_potion: IPotion = {
 sorTuzin.equip(sword);
 sorTuzin.equip(shield);
 sorTuzin.add_item_to_inventory(healing_potion);
+sorTuzin.add_item_to_inventory(molotov, 2);
 
 (async () => {
   const { combat, first_round } = new Combat([sorTuzin], [javali]).init();
@@ -148,7 +169,9 @@ sorTuzin.add_item_to_inventory(healing_potion);
               `- ${
                 [...allies, ...enemies].find((c) => c.id === effect.char_id)
                   ?.name
-              }: ${effect.type}\n`
+              }: ${effect.type} - ${
+                effect.remaining_turns / (allies.length + enemies.length)
+              }\n`
           )}`
         );
       }
@@ -175,7 +198,7 @@ sorTuzin.add_item_to_inventory(healing_potion);
             choices: child_actions
               .map((action) => ({
                 title: `${action.item.name} (${action.name})`,
-                description: action.item.description,
+                description: `${action.item.description} (${action.description})`,
                 value: action,
               }))
               .concat({
