@@ -35,6 +35,14 @@ export const instanceOfEquipmentWithActions = (
 ): object is IEquipmentWithActions =>
   object.hasOwnProperty("available_actions");
 
+export interface IEquipmentWithManaPower extends IEquipment {
+  mana_power: number;
+}
+
+export const instanceOfEquipmentWithManaPower = (
+  object: Object
+): object is IEquipmentWithManaPower => object.hasOwnProperty("mana_power");
+
 export interface IArmor extends IEquipmentWithArmor {
   type: EEquipmentType.ARMOR;
 }
@@ -48,7 +56,9 @@ export interface IListedDamage {
   type: EDamageType;
   value: number;
 }
-export interface IWeapon extends IEquipment, IEquipmentWithActions {
+export interface IWeapon extends IEquipmentWithActions {
   type: EEquipmentType.WEAPON;
   listed_damages: IListedDamage[];
 }
+
+export interface ISpellCastingFocus extends IEquipmentWithManaPower {}

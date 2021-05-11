@@ -8,6 +8,7 @@ import {
   IResistances,
   ISpell,
 } from "../../internal";
+import { instanceOfEquipmentWithManaPower } from "../../types/equipment.types";
 
 export class Record {
   readonly id: string;
@@ -66,6 +67,10 @@ export class Character extends Record {
       throw new EquipmentAlreadyEquipped();
     } else {
       this._equipped_equipment = [...this._equipped_equipment, equipment];
+      if (instanceOfEquipmentWithManaPower(equipment)) {
+        this._max_mana += equipment.mana_power;
+        this._current_mana += equipment.mana_power;
+      }
     }
     this.recalculate_armor();
   }

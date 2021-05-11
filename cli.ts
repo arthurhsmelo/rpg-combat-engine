@@ -27,6 +27,7 @@ import {
   fire_bolt,
   revive,
   living,
+  ISpellCastingFocus,
 } from "./src/internal";
 
 const sorTuzin = new Player({
@@ -59,13 +60,14 @@ const javali2 = new NPC(
     },
   }
 );
-const sword: IWeapon = {
+const sword: IWeapon & ISpellCastingFocus = {
   id: "SWORD",
   name: "Espada",
   label: "EP",
   description: "Uma espada comum",
   type: EEquipmentType.WEAPON,
   related_skill: ESkillType.SWORDS,
+  mana_power: 20,
   listed_damages: [
     {
       type: EDamageType.SLASH,
@@ -147,11 +149,20 @@ const molotov: IPotion = {
     }),
   ],
 };
+const diamond: IPotion = {
+  id: "Diamond",
+  name: "Diamante",
+  label: "DM",
+  description: "Pedra preciosa",
+  type: EItemType.POTION,
+  available_actions: [],
+};
 
 sorTuzin.equip(sword);
 sorTuzin.equip(shield);
 sorTuzin.add_item_to_inventory(healing_potion);
 sorTuzin.add_item_to_inventory(molotov, 2);
+sorTuzin.add_item_to_inventory(diamond, 3);
 sorTuzin.add_spell(fire_bolt);
 sorTuzin.add_spell(revive);
 
