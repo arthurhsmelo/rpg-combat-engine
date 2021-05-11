@@ -24,9 +24,9 @@ import {
   use_item,
   fire_damage,
   pipe,
-  ESpellComponent,
-  ISpell,
-  use_spell,
+  fire_bolt,
+  revive,
+  living,
 } from "./src/internal";
 
 const sorTuzin = new Player({
@@ -35,9 +35,20 @@ const sorTuzin = new Player({
   label: "ST",
   description: "Jogador",
 });
-
 const javali = new NPC(
   { id: "2", name: "Javali", label: "JV", description: "Animal Selvagem" },
+  ECharacterType.BOAR,
+  {
+    strategy: ({ available_actions, enemies }) => {
+      return {
+        action: available_actions[0],
+        target: enemies[0],
+      };
+    },
+  }
+);
+const javali2 = new NPC(
+  { id: "32", name: "Java123li", label: "JV", description: "Animal Selvagem" },
   ECharacterType.BOAR,
   {
     strategy: ({ available_actions, enemies }) => {
@@ -60,10 +71,6 @@ const sword: IWeapon = {
       type: EDamageType.SLASH,
       value: 10,
     },
-    {
-      type: EDamageType.BLUNT,
-      value: 5,
-    },
   ],
   get available_actions() {
     return [
@@ -73,7 +80,7 @@ const sword: IWeapon = {
         label: "GP",
         description: "Um corte violento",
         execute: damage(this.listed_damages, this.related_skill),
-        get_available_targets: hostile(),
+        get_available_targets: pipe(hostile(), living),
         related_skill: ESkillType.SWORDS,
         type: EActionType.PHYSICAL_ATTACK,
       }),
@@ -98,7 +105,7 @@ const shield: IShield = {
         turn_state.apply_effect(blockingEffect(turn_state), target);
         return true;
       },
-      get_available_targets: friendly(),
+      get_available_targets: pipe(friendly(), living),
       related_skill: ESkillType.SHIELDS,
       type: EActionType.HELP,
     }),
@@ -117,7 +124,7 @@ const healing_potion: IPotion = {
       label: "PC",
       description: "Cura 10 pontos de vida",
       execute: pipe(use_item("POTION"), heal(10)),
-      get_available_targets: friendly(),
+      get_available_targets: pipe(friendly(), living),
       type: EActionType.HEAL,
     }),
   ],
@@ -135,51 +142,33 @@ const molotov: IPotion = {
       label: "IC",
       description: "Aplica 3 de dano de fogo por turno, por 3 turnos",
       execute: pipe(use_item("MOLOTOV"), fire_damage(10)),
-      get_available_targets: hostile(),
+      get_available_targets: pipe(hostile(), living),
       type: EActionType.DOT,
     }),
   ],
-};
-const fire_ball: ISpell = {
-  id: "FIREBALL",
-  name: "Fire Ball",
-  description:
-    "Você se concentra e arremessa uma bola de fogo, causando 20 de dano de fogo em divididos em 3 turnos",
-  label: "FB",
-  type: EActionType.SPELL,
-  related_skill: ESkillType.SPELL_CASTING,
-  mana_cost: 10,
-  casting_time: 1,
-  components: [ESpellComponent.SOMATIC, ESpellComponent.VERBAL],
-  after_cast: fire_damage(20, ESkillType.SPELL_CASTING),
-  get_available_targets: hostile(),
-  get execute() {
-    return use_spell(this);
-  },
 };
 
 sorTuzin.equip(sword);
 sorTuzin.equip(shield);
 sorTuzin.add_item_to_inventory(healing_potion);
 sorTuzin.add_item_to_inventory(molotov, 2);
-sorTuzin.add_spell(fire_ball);
+sorTuzin.add_spell(fire_bolt);
+sorTuzin.add_spell(revive);
 
 (async () => {
-  const { combat, first_round } = new Combat([sorTuzin], [javali]).init();
+  const { combat, first_round } = new Combat(
+    [sorTuzin],
+    [javali, javali2]
+  ).init();
   let round = first_round;
   let combat_done = round.done;
   do {
     if (!round.done) {
-      const {
-        who,
-        available_actions,
-        allies,
-        enemies,
-        active_effects,
-      } = round.value as TurnState;
+      const { agent, available_actions, allies, enemies, active_effects } =
+        round.value as TurnState;
 
       console.log(`\n
-        - ${who.name}: ${who.current_hp}\n
+        - ${agent.name}: ${agent.current_hp}\n
         - ${enemies[0].name}: ${enemies[0].current_hp}\n
       \n`);
       if (active_effects.length) {
@@ -190,9 +179,7 @@ sorTuzin.add_spell(fire_ball);
               `- ${
                 [...allies, ...enemies].find((c) => c.id === effect.char_id)
                   ?.name
-              }: ${effect.type} - ${
-                effect.remaining_turns / (allies.length + enemies.length)
-              }\n`
+              }: ${effect.type} - ${effect.remaining_turns}\n`
           )}`
         );
       }
@@ -209,9 +196,9 @@ sorTuzin.add_spell(fire_ball);
           })),
         })) as { action: IAction });
         if ((action as IAction<EActionType.USE_ITEM>).get_child_actions) {
-          const child_actions = (action as IAction<EActionType.USE_ITEM>).get_child_actions(
-            who
-          );
+          const child_actions = (
+            action as IAction<EActionType.USE_ITEM>
+          ).get_child_actions(agent);
           ({ action } = (await prompts({
             type: "select",
             name: "action",

@@ -56,8 +56,8 @@ export class Character extends Record {
     this._resistances = this._default_values.resistances;
     this._equipped_equipment = [];
     this._spells = [];
-    this._max_mana = 10;
-    this._current_mana = 10;
+    this._max_mana = 0;
+    this._current_mana = 0;
   }
 
   public equip(equipment: IEquipment) {
@@ -90,7 +90,7 @@ export class Character extends Record {
         damage_taken = damage - this._armor;
       }
     }
-    this._current_hp -= damage_taken;
+    this._current_hp = Math.max(this._current_hp - damage_taken, 0);
   }
 
   public receive_healing(healing: number) {

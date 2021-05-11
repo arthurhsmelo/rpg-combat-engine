@@ -26,3 +26,4 @@ export * from "./models/verbose/verbose";
 
 // Consts
 export * from "./consts/default_char_values";
+export * from "./consts/spells";

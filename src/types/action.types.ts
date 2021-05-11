@@ -39,7 +39,7 @@ export interface IBaseAction<T extends EActionType = EActionType>
 export type IActionWithChild<
   T extends EActionType = EActionType
 > = IBaseAction<T> & {
-  get_child_actions: (who: Character) => IChildAction[];
+  get_child_actions: (agent: Character) => IChildAction[];
 };
 export interface IChildAction<T extends EActionType = EActionType>
   extends IBaseAction<T> {

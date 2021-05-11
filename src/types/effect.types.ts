@@ -39,8 +39,8 @@ export interface ICastingEffect extends IEffectWithActionAfterEnd {
 }
 export interface IBlockingEffect extends IEffect {
   type: EEffectType.BLOCKING;
-  who_is_blocking: Character;
+  blocker: Character;
 }
 export const instanceOfBlockingEffect = (
   object: Object
-): object is IBlockingEffect => object.hasOwnProperty("who_is_blocking");
+): object is IBlockingEffect => object.hasOwnProperty("blocker");

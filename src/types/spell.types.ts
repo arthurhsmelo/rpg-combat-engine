@@ -2,12 +2,9 @@ import {
   ActionResult,
   EActionType,
   ESkillType,
-  fire_damage,
   IBaseAction,
   IExecuteParams,
-  use_spell,
 } from "../internal";
-import { hostile } from "../utils/targets/targets";
 
 export enum ESpellComponent {
   VERBAL = "VERBAL",
@@ -24,7 +21,14 @@ export interface ISpell extends IBaseAction<EActionType.SPELL> {
   components: ESpellComponent[];
 }
 
-type MaterialID = string;
-export interface ISpellWithMaterial extends ISpell {
-  required_materials: MaterialID[];
+export interface IMaterial {
+  item_id: string;
+  quantity: number;
 }
+export interface ISpellWithMaterial extends ISpell {
+  required_materials: IMaterial[];
+}
+
+export const instanceOfSpellWithMaterial = (
+  object: Object
+): object is ISpellWithMaterial => object.hasOwnProperty("required_materials");

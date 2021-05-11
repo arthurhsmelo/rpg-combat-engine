@@ -37,7 +37,7 @@ export const calculate_damage = (
   turn_state: TurnState,
   related_skill?: ESkillType
 ) => {
-  const { who, active_effects } = turn_state;
+  const { agent, active_effects } = turn_state;
 
   const apply_blocking_penalty = (damage: number) => {
     const blocking = active_effects.find(
@@ -45,13 +45,13 @@ export const calculate_damage = (
     );
     let result = damage;
     if (blocking && instanceOfBlockingEffect(blocking)) {
-      const { block_power } = (blocking.who_is_blocking.equipped_equipment.find(
+      const { block_power } = (blocking.blocker.equipped_equipment.find(
         (equipment) => equipment.type === EEquipmentType.SHIELD
       ) as IShield) ?? { block_power: 0 };
 
       let level = 0;
-      if (blocking.who_is_blocking instanceof Player) {
-        ({ level } = blocking.who_is_blocking.skills.find(
+      if (blocking.blocker instanceof Player) {
+        ({ level } = blocking.blocker.skills.find(
           (s) => s.type === ESkillType.SHIELDS
         ) ?? { level: 0 });
       }
@@ -64,8 +64,8 @@ export const calculate_damage = (
         const parry =
           random(PARRY_RANGE.MIN, PARRY_RANGE.MAX) + BLOCK_MULTIPLIER * level;
         if (Math.random() <= parry) {
-          // Apply Staggered effect to who is attacking
-          turn_state.apply_effect(staggeredEffect(), who);
+          // Apply Staggered effect to turn agent
+          turn_state.apply_effect(staggeredEffect(), agent);
           result = 0;
         }
       }
@@ -73,7 +73,7 @@ export const calculate_damage = (
       // Gets staggered
       if (damage > blocked_damage * 4) {
         // Apply Staggered effect to blocker
-        turn_state.apply_effect(staggeredEffect(), blocking.who_is_blocking);
+        turn_state.apply_effect(staggeredEffect(), blocking.blocker);
         result = damage;
       }
     }
@@ -83,7 +83,7 @@ export const calculate_damage = (
   const apply_damage_type_bonus = (type: EDamageType) => (damage: number) => {
     const resistance = target.resistances[type];
     let result = damage;
-    if (resistance) {
+    if (resistance !== undefined) {
       result = damage * resistance;
     }
     return result;
@@ -105,19 +105,18 @@ export const calculate_damage = (
     let rng: number = 0;
     let skill_level: number = 0;
 
-    if (who instanceof NPC) {
+    if (agent instanceof NPC) {
       rng = random(NPC_DAMAGE_RANGE.MIN, NPC_DAMAGE_RANGE.MAX);
-    } else if (who instanceof Player) {
+    } else if (agent instanceof Player) {
       rng = random(PLAYER_DAMAGE_RANGE.MIN, PLAYER_DAMAGE_RANGE.MAX);
 
       if (related_skill) {
-        const skill = who.skills.find((s) => s.type === related_skill);
+        const skill = agent.skills.find((s) => s.type === related_skill);
         skill_level = SKILL_MULTIPLIER * (skill?.level ?? 0);
       }
     }
 
     const result = Math.min(rng + skill_level, 1) * damage;
-    console.log(damage, result, rng, skill_level);
     return result;
   };
 

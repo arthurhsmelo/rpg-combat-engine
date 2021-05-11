@@ -12,7 +12,7 @@ import { ISpell } from "../../types/spell.types";
 
 export const blockingEffect = (turn_state: TurnState): IBlockingEffect => ({
   type: EEffectType.BLOCKING,
-  who_is_blocking: turn_state.who,
+  blocker: turn_state.agent,
   blocks_action: false,
   duration: 1,
 });
@@ -45,7 +45,7 @@ export const burning_effect = (
   turn_action: damage_turn_action(damage, duration),
 });
 
-export const castingEffect = (
+export const casting_effect = (
   spell: ISpell,
   target: Character
 ): ICastingEffect => ({

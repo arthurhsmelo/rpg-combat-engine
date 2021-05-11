@@ -5,21 +5,21 @@ import {
   ESkillType,
   ICharacterDefaultValues,
   damage,
-  friendly,
   hostile,
   Player,
   Character,
   action_creator,
   instanceOfItemWithActions,
-  EResistanceMultipler,
   IChildAction,
+  pipe,
+  living,
 } from "../internal";
 
 export const default_char_values: {
   [key in ECharacterType]: ICharacterDefaultValues;
 } = {
   BOAR: {
-    base_hp: 10,
+    base_hp: 5,
     armor: 0,
     available_actions: [
       {
@@ -27,8 +27,8 @@ export const default_char_values: {
         name: "Morder",
         description: "Mordida feroz",
         label: "MD",
-        execute: damage([{ type: EDamageType.BLUNT, value: 8 }]),
-        get_available_targets: hostile(),
+        execute: damage([{ type: EDamageType.BLUNT, value: 3 }]),
+        get_available_targets: pipe(hostile(), living),
         type: EActionType.PHYSICAL_ATTACK,
       },
     ],
@@ -48,7 +48,7 @@ export const default_char_values: {
           [{ type: EDamageType.BLUNT, value: 3 }],
           ESkillType.UNARMED
         ),
-        get_available_targets: hostile(),
+        get_available_targets: pipe(hostile(), living),
         related_skill: ESkillType.UNARMED,
         type: EActionType.PHYSICAL_ATTACK,
       },
@@ -60,9 +60,9 @@ export const default_char_values: {
         execute: () => {
           return true;
         },
-        get_child_actions: (who: Character) => {
-          if (who instanceof Player) {
-            return (who as Player).inventory.reduce<IChildAction[]>(
+        get_child_actions: (agent: Character) => {
+          if (agent instanceof Player) {
+            return (agent as Player).inventory.reduce<IChildAction[]>(
               (actions, item) => {
                 if (instanceOfItemWithActions(item)) {
                   return actions.concat(
@@ -82,7 +82,7 @@ export const default_char_values: {
             return [];
           }
         },
-        get_available_targets: friendly(),
+        get_available_targets: () => [],
         type: EActionType.USE_ITEM,
       }),
     ],

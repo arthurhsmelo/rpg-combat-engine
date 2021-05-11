@@ -12,7 +12,6 @@ import {
   IChildAction,
   instanceOfEffectWithActionPerTurn,
   instanceOfEffectWithActionAfterEnd,
-  IExecuteParams,
 } from "../../internal";
 
 function shuffleArray(array: Array<any>) {
@@ -37,7 +36,7 @@ export type CombatEffects = Array<
 >;
 
 export interface TurnState {
-  who: Character;
+  agent: Character;
   available_actions: IAction[];
   allies: Character[];
   enemies: Character[];
@@ -87,10 +86,10 @@ export class Combat {
 
   private *_init(): Generator<TurnState, CombatResult, ActArguments> {
     do {
-      const who = this.combat_queue[this.current_index];
-      const { allies, enemies } = this.get_allies_and_enemies(who);
+      const agent = this.combat_queue[this.current_index];
+      const { allies, enemies } = this.get_allies_and_enemies(agent);
       this.turn_state = {
-        who,
+        agent,
         available_actions: this.get_available_actions(),
         allies,
         enemies,
@@ -98,12 +97,12 @@ export class Combat {
         apply_effect: this.apply_effect.bind(this),
       };
       let action: IAction, target: Character | undefined;
-      if (who instanceof NPC) {
-        ({ action, target } = who.strategy(this.turn_state));
+      if (agent instanceof NPC) {
+        ({ action, target } = agent.strategy(this.turn_state));
       } else {
         ({ action, target } = yield this.turn_state);
         if (action.related_skill) {
-          (who as Player).increase_skill(action.related_skill);
+          (agent as Player).increase_skill(action.related_skill);
         }
       }
       if (action && (action.type === EActionType.NULL || target)) {
@@ -127,13 +126,19 @@ export class Combat {
         target,
         turn_state: this.turn_state,
       });
-      this.update_active_effects();
-      this.current_index = (1 + this.current_index) % this.combat_queue.length;
+
+      if (
+        typeof action_result !== "boolean" ||
+        (typeof action_result === "boolean" && action_result === true)
+      ) {
+        this.update_active_effects();
+        this.move_combat_queue();
+      }
 
       if (this.verbose && typeof action_result === "number") {
         console.log(
           "\n - " +
-            this.turn_state.who.name +
+            this.turn_state.agent.name +
             " " +
             common_verbose["uses"] +
             " " +
@@ -160,6 +165,16 @@ export class Combat {
     return this._result;
   }
 
+  private move_combat_queue() {
+    let can_attack = false;
+    do {
+      this.current_index = (1 + this.current_index) % this.combat_queue.length;
+      if (this.combat_queue[this.current_index].current_hp > 0) {
+        can_attack = true;
+      }
+    } while (!can_attack);
+  }
+
   private update_active_effects() {
     const queue_after_end: Function[] = [];
     this.active_effects = this.active_effects.filter((effect) => {
@@ -177,7 +192,7 @@ export class Combat {
         queue_after_end.push(() => {
           effect.action_after_end({
             target: effect.target,
-            turn_state: { ...this.turn_state, who: target },
+            turn_state: { ...this.turn_state, agent: target },
           });
         });
       }
@@ -218,10 +233,10 @@ export class Combat {
   }
 
   private get_available_actions(): IAction<EActionType>[] {
-    const who = this.combat_queue[this.current_index];
+    const agent = this.combat_queue[this.current_index];
     if (
       this.active_effects.find(
-        (eff) => eff.char_id === who.id && eff.blocks_action === true
+        (eff) => eff.char_id === agent.id && eff.blocks_action === true
       )
     ) {
       return [
@@ -238,8 +253,8 @@ export class Combat {
         }),
       ];
     } else {
-      const default_available_actions = who.default_values.available_actions;
-      const available_actions = who.equipped_equipment
+      const default_available_actions = agent.default_values.available_actions;
+      const available_actions = agent.equipped_equipment
         .reduce((available_actions, equip) => {
           if (instanceOfEquipmentWithActions(equip)) {
             return available_actions.concat(equip.available_actions);
@@ -247,13 +262,13 @@ export class Combat {
             return available_actions;
           }
         }, default_available_actions)
-        .concat(...who.spells);
+        .concat(...agent.spells);
       return available_actions;
     }
   }
 
-  private get_allies_and_enemies(who: Character) {
-    const is_from_group_1 = this.group_1.find((c) => c.id === who.id);
+  private get_allies_and_enemies(agent: Character) {
+    const is_from_group_1 = this.group_1.find((c) => c.id === agent.id);
     if (is_from_group_1) {
       return { allies: this.group_1, enemies: this.group_2 };
     } else {
