@@ -1,4 +1,5 @@
 import { Character, IExecuteParams } from "../internal";
+import { TurnState } from "../models/combat/combat";
 
 export enum EEffectType {
   "STAGGERED" = "STAGGERED",
@@ -23,8 +24,7 @@ export const instanceOfEffectWithActionPerTurn = (
 ): object is IEffectWithActionPerTurn => object.hasOwnProperty("turn_action");
 
 export interface IEffectWithActionAfterEnd extends IEffect {
-  target: Character;
-  action_after_end: (args: IExecuteParams) => void;
+  action_after_end: (turn_state: TurnState) => void;
 }
 export const instanceOfEffectWithActionAfterEnd = (
   object: Object

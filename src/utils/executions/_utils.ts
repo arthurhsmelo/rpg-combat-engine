@@ -24,10 +24,11 @@ const PLAYER_DAMAGE_RANGE = {
 };
 const PARRY_RANGE = {
   MIN: 0,
-  MAX: 0.5,
+  MAX: 1,
 };
 const SKILL_MULTIPLIER = 0.006;
 const BLOCK_MULTIPLIER = 0.005;
+const PARRY_MULTIPLIER = 0.009;
 
 const random = (min: number, max: number) => Math.random() * (max - min) + min;
 
@@ -61,9 +62,9 @@ export const calculate_damage = (
 
       // Parry
       if (damage <= blocked_damage * 2) {
-        const parry =
-          random(PARRY_RANGE.MIN, PARRY_RANGE.MAX) + BLOCK_MULTIPLIER * level;
+        const parry = random(PARRY_MULTIPLIER * level, PARRY_RANGE.MAX);
         if (Math.random() <= parry) {
+          console.log("applied parry", agent.id);
           // Apply Staggered effect to turn agent
           turn_state.apply_effect(staggeredEffect(), agent);
           result = 0;

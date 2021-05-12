@@ -175,8 +175,13 @@ sorTuzin.add_spell(revive);
   let combat_done = round.done;
   do {
     if (!round.done) {
-      const { agent, available_actions, allies, enemies, active_effects } =
-        round.value as TurnState;
+      const {
+        agent,
+        available_actions,
+        allies,
+        enemies,
+        active_effects,
+      } = round.value as TurnState;
 
       console.log(`\n
         - ${agent.name}: ${agent.current_hp}\n
@@ -207,9 +212,9 @@ sorTuzin.add_spell(revive);
           })),
         })) as { action: IAction });
         if ((action as IAction<EActionType.USE_ITEM>).get_child_actions) {
-          const child_actions = (
-            action as IAction<EActionType.USE_ITEM>
-          ).get_child_actions(agent);
+          const child_actions = (action as IAction<EActionType.USE_ITEM>).get_child_actions(
+            agent
+          );
           ({ action } = (await prompts({
             type: "select",
             name: "action",

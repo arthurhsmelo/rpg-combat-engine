@@ -127,14 +127,6 @@ export class Combat {
         turn_state: this.turn_state,
       });
 
-      if (
-        typeof action_result !== "boolean" ||
-        (typeof action_result === "boolean" && action_result === true)
-      ) {
-        this.update_active_effects();
-        this.move_combat_queue();
-      }
-
       if (this.verbose && typeof action_result === "number") {
         console.log(
           "\n - " +
@@ -156,6 +148,13 @@ export class Combat {
             "\n"
         );
       }
+
+      if (
+        typeof action_result !== "boolean" ||
+        (typeof action_result === "boolean" && action_result === true)
+      ) {
+        this.move_combat_queue();
+      }
     }
     this.check_finish();
 
@@ -168,6 +167,8 @@ export class Combat {
   private move_combat_queue() {
     let can_attack = false;
     do {
+      console.log("dowhile");
+      this.update_active_effects();
       this.current_index = (1 + this.current_index) % this.combat_queue.length;
       if (this.combat_queue[this.current_index].current_hp > 0) {
         can_attack = true;
@@ -178,11 +179,11 @@ export class Combat {
   private update_active_effects() {
     const queue_after_end: Function[] = [];
     this.active_effects = this.active_effects.filter((effect) => {
-      const target = this.get_char_by_id(effect.char_id) as Character;
+      const effect_target = this.get_char_by_id(effect.char_id) as Character;
       const round_start =
         effect.remaining_turns % this.combat_queue.length === 0;
       if (instanceOfEffectWithActionPerTurn(effect) && round_start) {
-        effect.turn_action({ target });
+        effect.turn_action({ target: effect_target });
       }
       effect.remaining_turns -= 1;
       if (
@@ -190,20 +191,24 @@ export class Combat {
         effect.remaining_turns === 0
       ) {
         queue_after_end.push(() => {
-          effect.action_after_end({
-            target: effect.target,
-            turn_state: { ...this.turn_state, agent: target },
-          });
+          effect.action_after_end({ ...this.turn_state, agent: effect_target });
         });
       }
       return effect.remaining_turns > 0;
     });
     queue_after_end.forEach((afe) => afe());
+    console.log(
+      this.active_effects.map((ac) => ({
+        name: ac.char_id,
+        type: ac.type,
+        rt: ac.remaining_turns,
+      }))
+    );
   }
 
   private apply_effect = (effect: IEffect, target: Character) => {
     const active_effect = this.active_effects.find(
-      (eff) => eff.type === effect.type
+      (eff) => eff.type === effect.type && eff.char_id === target.id
     );
     if (active_effect) {
       active_effect.remaining_turns +=
@@ -246,7 +251,7 @@ export class Combat {
           label: "ZZ",
           description: "Você não consegue agir neste turno",
           execute: () => {
-            return false;
+            return true;
           },
           get_available_targets: () => [],
           type: EActionType.NULL,

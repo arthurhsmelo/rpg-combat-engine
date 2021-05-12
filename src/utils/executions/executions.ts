@@ -29,7 +29,6 @@ export const fire_damage = (value: number, related_skill?: ESkillType) => ({
     turn_state,
     related_skill
   );
-  console.log("burning effect:", damage);
   turn_state.apply_effect(burning_effect(damage), target);
   return true;
 };

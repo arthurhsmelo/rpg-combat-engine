@@ -30,7 +30,6 @@ const damage_turn_action = (
 ) => ({ target }: IEffectTurnActionParams) => {
   if (target) {
     const damage_per_turn = damage / duration;
-    console.log("burning dmg:", damage_per_turn);
     target.receive_damage(damage_per_turn, ignore_armor);
   }
 };
@@ -47,11 +46,11 @@ export const burning_effect = (
 
 export const casting_effect = (
   spell: ISpell,
-  target: Character
+  spell_target: Character
 ): ICastingEffect => ({
   type: EEffectType.CASTING,
   blocks_action: true,
   duration: spell.casting_time,
-  action_after_end: spell.after_cast,
-  target,
+  action_after_end: (turn_state) =>
+    spell.after_cast({ turn_state, target: spell_target }),
 });
