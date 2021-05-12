@@ -27,7 +27,7 @@ export const default_char_values: {
         name: "Morder",
         description: "Mordida feroz",
         label: "MD",
-        execute: damage([{ type: EDamageType.BLUNT, value: 3 }]),
+        execute: damage([{ type: EDamageType.BLUNT, value: 5 }]),
         get_available_targets: pipe(hostile(), living),
         type: EActionType.PHYSICAL_ATTACK,
       },

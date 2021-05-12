@@ -64,7 +64,6 @@ export const calculate_damage = (
       if (damage <= blocked_damage * 2) {
         const parry = random(PARRY_MULTIPLIER * level, PARRY_RANGE.MAX);
         if (Math.random() <= parry) {
-          console.log("applied parry", agent.id);
           // Apply Staggered effect to turn agent
           turn_state.apply_effect(staggeredEffect(), agent.id);
           result = 0;

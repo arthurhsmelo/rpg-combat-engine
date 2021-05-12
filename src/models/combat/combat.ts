@@ -178,12 +178,14 @@ export class Combat {
   }
 
   private update_active_effects() {
-    const queue_after_end: Function[] = [];
-    this.active_effects = this.active_effects.filter((effect) => {
+    this.active_effects.forEach((effect) => {
       const effect_target = this.get_char_by_id(effect.char_id) as Character;
       const round_start =
         effect.remaining_turns % this.combat_queue.length === 0;
-      if (instanceOfEffectWithActionPerTurn(effect) && round_start) {
+      if (
+        instanceOfEffectWithActionPerTurn(effect) &&
+        (round_start || effect.remaining_turns === Infinity)
+      ) {
         effect.turn_action({
           target: effect_target,
           turn_state: this.turn_state,
@@ -194,13 +196,12 @@ export class Combat {
         instanceOfEffectWithActionAfterEnd(effect) &&
         effect.remaining_turns === 0
       ) {
-        queue_after_end.push(() => {
-          effect.action_after_end({ ...this.turn_state, agent: effect_target });
-        });
+        effect.action_after_end({ ...this.turn_state, agent: effect_target });
       }
-      return effect.remaining_turns > 0;
     });
-    queue_after_end.forEach((afe) => afe());
+    this.active_effects = this.active_effects.filter(
+      (eff) => eff.remaining_turns > 0
+    );
   }
 
   private apply_effect = (effect: IEffect, target_id: string) => {
