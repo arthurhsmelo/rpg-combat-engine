@@ -13,6 +13,7 @@ import {
   instanceOfEffectWithActionPerTurn,
   instanceOfEffectWithActionAfterEnd,
 } from "../../internal";
+import { EEffectType } from "../../types/effect.types";
 
 function shuffleArray(array: Array<any>) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -40,7 +41,8 @@ export interface TurnState {
   available_actions: IAction[];
   allies: Character[];
   enemies: Character[];
-  apply_effect: (effect: IEffect, target: Character) => void;
+  apply_effect: (effect: IEffect, target_id: string) => void;
+  remove_effect: (effect_type: EEffectType, target_id: string) => void;
   active_effects: CombatEffects;
 }
 
@@ -95,6 +97,7 @@ export class Combat {
         enemies,
         active_effects: this.active_effects,
         apply_effect: this.apply_effect.bind(this),
+        remove_effect: this.remove_effect.bind(this),
       };
       let action: IAction, target: Character | undefined;
       if (agent instanceof NPC) {
@@ -181,7 +184,10 @@ export class Combat {
       const round_start =
         effect.remaining_turns % this.combat_queue.length === 0;
       if (instanceOfEffectWithActionPerTurn(effect) && round_start) {
-        effect.turn_action({ target: effect_target });
+        effect.turn_action({
+          target: effect_target,
+          turn_state: this.turn_state,
+        });
       }
       effect.remaining_turns -= 1;
       if (
@@ -197,19 +203,30 @@ export class Combat {
     queue_after_end.forEach((afe) => afe());
   }
 
-  private apply_effect = (effect: IEffect, target: Character) => {
+  private apply_effect = (effect: IEffect, target_id: string) => {
     const active_effect = this.active_effects.find(
-      (eff) => eff.type === effect.type && eff.char_id === target.id
+      (eff) => eff.type === effect.type && eff.char_id === target_id
     );
     if (active_effect) {
       active_effect.remaining_turns +=
         effect.duration * this.combat_queue.length;
     } else {
       this.active_effects.push({
-        char_id: target.id,
+        char_id: target_id,
         remaining_turns: effect.duration * this.combat_queue.length,
         ...effect,
       });
+    }
+  };
+
+  private remove_effect = (effect_type: EEffectType, char_id: string) => {
+    const active_effect_index = this.active_effects.findIndex(
+      (eff) => eff.type === effect_type && eff.char_id === char_id
+    );
+    if (active_effect_index !== -1) {
+      this.active_effects = this.active_effects
+        .slice(0, active_effect_index)
+        .concat(this.active_effects.slice(active_effect_index + 1));
     }
   };
 

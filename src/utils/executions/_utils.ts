@@ -66,7 +66,7 @@ export const calculate_damage = (
         if (Math.random() <= parry) {
           console.log("applied parry", agent.id);
           // Apply Staggered effect to turn agent
-          turn_state.apply_effect(staggeredEffect(), agent);
+          turn_state.apply_effect(staggeredEffect(), agent.id);
           result = 0;
         }
       }
@@ -74,7 +74,7 @@ export const calculate_damage = (
       // Gets staggered
       if (damage > blocked_damage * 4) {
         // Apply Staggered effect to blocker
-        turn_state.apply_effect(staggeredEffect(), blocking.blocker);
+        turn_state.apply_effect(staggeredEffect(), blocking.blocker.id);
         result = damage;
       }
     }

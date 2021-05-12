@@ -6,6 +6,8 @@ import {
   ISpell,
   Player,
 } from "../../internal";
+import { EEffectType } from "../../types/effect.types";
+import { concentration_effect } from "../effects/effects";
 import { use_item } from "../executions/execution_side_effects";
 
 export const use_spell =
@@ -40,8 +42,13 @@ export const use_spell =
       });
       if (spell.casting_time > 0) {
         turn_state.apply_effect(
-          casting_effect(spell, target),
-          turn_state.agent
+          concentration_effect({
+            turn_state,
+            duration: spell.casting_time,
+            related_effect: casting_effect(spell, target),
+            related_effect_target_id: turn_state.agent.id,
+          }),
+          turn_state.agent.id
         );
         spell_used = true;
       } else {

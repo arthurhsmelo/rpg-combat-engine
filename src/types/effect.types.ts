@@ -6,6 +6,7 @@ export enum EEffectType {
   "BLOCKING" = "BLOCKING",
   "BURNING" = "BURNING",
   "CASTING" = "CASTING",
+  "CONCENTRATING" = "CONCENTRATING",
 }
 export interface IEffect {
   type: EEffectType;
@@ -15,6 +16,7 @@ export interface IEffect {
 
 export interface IEffectTurnActionParams {
   target: Character;
+  turn_state: TurnState;
 }
 export interface IEffectWithActionPerTurn extends IEffect {
   turn_action: (args: IEffectTurnActionParams) => void;
@@ -37,6 +39,16 @@ export interface IBurningEffect extends IEffectWithActionPerTurn {
 export interface ICastingEffect extends IEffectWithActionAfterEnd {
   type: EEffectType.CASTING;
 }
+export interface IConcentratingEffect extends IEffectWithActionPerTurn {
+  type: EEffectType.CONCENTRATING;
+  related_to: {
+    effect_type: EEffectType;
+    effect_target_id: string;
+  };
+}
+export const instanceOfConcentratingEffect = (
+  object: Object
+): object is IConcentratingEffect => object.hasOwnProperty("related_to");
 export interface IBlockingEffect extends IEffect {
   type: EEffectType.BLOCKING;
   blocker: Character;

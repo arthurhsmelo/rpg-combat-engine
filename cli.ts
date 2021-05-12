@@ -28,6 +28,7 @@ import {
   revive,
   living,
   ISpellCastingFocus,
+  protect,
 } from "./src/internal";
 
 const sorTuzin = new Player({
@@ -104,7 +105,7 @@ const shield: IShield = {
       label: "BQ",
       description: "Você levanta seu escudo para bloquear o próximo ataque",
       execute: ({ target, turn_state }) => {
-        turn_state.apply_effect(blockingEffect(turn_state), target);
+        turn_state.apply_effect(blockingEffect(turn_state), target.id);
         return true;
       },
       get_available_targets: pipe(friendly(), living),
@@ -165,6 +166,7 @@ sorTuzin.add_item_to_inventory(molotov, 2);
 sorTuzin.add_item_to_inventory(diamond, 3);
 sorTuzin.add_spell(fire_bolt);
 sorTuzin.add_spell(revive);
+sorTuzin.add_spell(protect);
 
 (async () => {
   const { combat, first_round } = new Combat(
@@ -175,13 +177,8 @@ sorTuzin.add_spell(revive);
   let combat_done = round.done;
   do {
     if (!round.done) {
-      const {
-        agent,
-        available_actions,
-        allies,
-        enemies,
-        active_effects,
-      } = round.value as TurnState;
+      const { agent, available_actions, allies, enemies, active_effects } =
+        round.value as TurnState;
 
       const participants = [...allies, ...enemies];
       console.table(
@@ -221,9 +218,9 @@ sorTuzin.add_spell(revive);
           })),
         })) as { action: IAction });
         if ((action as IAction<EActionType.USE_ITEM>).get_child_actions) {
-          const child_actions = (action as IAction<EActionType.USE_ITEM>).get_child_actions(
-            agent
-          );
+          const child_actions = (
+            action as IAction<EActionType.USE_ITEM>
+          ).get_child_actions(agent);
           ({ action } = (await prompts({
             type: "select",
             name: "action",

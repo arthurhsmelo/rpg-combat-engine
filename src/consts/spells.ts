@@ -10,7 +10,10 @@ import {
   dead,
   ISpellWithMaterial,
   living,
+  friendly,
 } from "../internal";
+import { EEffectType } from "../types/effect.types";
+import { blockingEffect, concentration_effect } from "../utils/effects/effects";
 
 export const fire_ball: ISpell = {
   id: "FIREBALL",
@@ -61,7 +64,7 @@ export const revive: ISpellWithMaterial = {
     target.receive_healing(1);
     return true;
   },
-  get_available_targets: pipe(dead()),
+  get_available_targets: dead(),
   get execute() {
     return use_spell(this);
   },
@@ -71,4 +74,32 @@ export const revive: ISpellWithMaterial = {
       quantity: 3,
     },
   ],
+};
+export const protect: ISpell = {
+  id: "Protect",
+  name: "Proteger",
+  description:
+    "Você se concentra para criar um escudo no seu alvo, criando um efeito de Bloquear",
+  label: "PR",
+  type: EActionType.SPELL,
+  related_skill: ESkillType.SPELL_CASTING,
+  mana_cost: 0,
+  casting_time: 0,
+  components: [ESpellComponent.SOMATIC, ESpellComponent.VERBAL],
+  after_cast: ({ target, turn_state }) => {
+    turn_state.apply_effect(
+      concentration_effect({
+        turn_state,
+        duration: Infinity,
+        related_effect: blockingEffect(turn_state, Infinity),
+        related_effect_target_id: target.id,
+      }),
+      turn_state.agent.id
+    );
+    return true;
+  },
+  get_available_targets: pipe(friendly(), living),
+  get execute() {
+    return use_spell(this);
+  },
 };
