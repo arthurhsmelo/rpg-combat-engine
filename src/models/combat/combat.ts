@@ -144,8 +144,7 @@ export class Combat {
             " " +
             action_result.toFixed(2) +
             " " +
-            verbose[action.type]?.action_result_unit +
-            "\n"
+            verbose[action.type]?.action_result_unit
         );
       }
 
@@ -167,7 +166,6 @@ export class Combat {
   private move_combat_queue() {
     let can_attack = false;
     do {
-      console.log("dowhile");
       this.update_active_effects();
       this.current_index = (1 + this.current_index) % this.combat_queue.length;
       if (this.combat_queue[this.current_index].current_hp > 0) {
@@ -197,13 +195,6 @@ export class Combat {
       return effect.remaining_turns > 0;
     });
     queue_after_end.forEach((afe) => afe());
-    console.log(
-      this.active_effects.map((ac) => ({
-        name: ac.char_id,
-        type: ac.type,
-        rt: ac.remaining_turns,
-      }))
-    );
   }
 
   private apply_effect = (effect: IEffect, target: Character) => {

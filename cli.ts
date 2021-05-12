@@ -183,22 +183,31 @@ sorTuzin.add_spell(revive);
         active_effects,
       } = round.value as TurnState;
 
-      console.log(`\n
-        - ${agent.name}: ${agent.current_hp}\n
-        - ${enemies[0].name}: ${enemies[0].current_hp}\n
-      \n`);
-      if (active_effects.length) {
-        console.log(`\nActive Effects:\n`);
-        console.log(
-          `${active_effects.map(
-            (effect) =>
-              `- ${
-                [...allies, ...enemies].find((c) => c.id === effect.char_id)
-                  ?.name
-              }: ${effect.type} - ${effect.remaining_turns}\n`
-          )}`
-        );
-      }
+      const participants = [...allies, ...enemies];
+      console.table(
+        participants.reduce((acc, curr) => {
+          return {
+            [curr.name]: {
+              hp: `${Math.ceil(curr.current_hp)}/${curr.max_hp}`,
+              mana: `${Math.ceil(curr.current_mana)}/${curr.max_mana}`,
+              effects: active_effects
+                .filter(
+                  (ac) =>
+                    ac.char_id === curr.id &&
+                    Math.ceil(ac.remaining_turns / participants.length) > 0
+                )
+                .map(
+                  (ac) =>
+                    `${ac.type}: ${Math.ceil(
+                      ac.remaining_turns / participants.length
+                    )}`
+                ),
+            },
+            ...acc,
+          };
+        }, {})
+      );
+      console.log("\n");
       let action, chosen;
       do {
         ({ action } = (await prompts({
@@ -261,5 +270,4 @@ sorTuzin.add_spell(revive);
     }
     combat_done = round.done;
   } while (!combat_done);
-  console.log(sorTuzin);
 })();

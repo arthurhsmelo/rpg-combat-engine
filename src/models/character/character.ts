@@ -155,6 +155,9 @@ export class Character extends Record {
   public get current_mana() {
     return this._current_mana;
   }
+  public get max_mana() {
+    return this._max_mana;
+  }
   public get spells() {
     return this._spells;
   }
