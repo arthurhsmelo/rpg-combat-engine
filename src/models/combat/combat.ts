@@ -15,6 +15,12 @@ import {
   EEffectType,
   instanceOfEffectWithDamage,
 } from "../../internal";
+import {
+  ICastingEffect,
+  IConcentratingEffect,
+  instanceOfEffectWithComponents,
+} from "../../types/effect.types";
+import { ESpellComponent } from "../../types/spell.types";
 
 function shuffleArray(array: Array<any>) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -236,6 +242,18 @@ export class Combat {
         ...effect,
       });
     }
+    this.active_effects.forEach((ae) => {
+      if (instanceOfEffectWithComponents(ae)) {
+        if (
+          (ae.components.includes(ESpellComponent.SOMATIC) &&
+            effect.blocks_somatic) ||
+          (ae.components.includes(ESpellComponent.VERBAL) &&
+            effect.blocks_verbal)
+        ) {
+          this.remove_effect(effect.type, target_id);
+        }
+      }
+    });
   };
 
   private remove_effect = (effect_type: EEffectType, char_id: string) => {

@@ -91,6 +91,7 @@ export const protect: ISpell = {
       concentration_effect({
         turn_state,
         duration: Infinity,
+        components: [ESpellComponent.SOMATIC, ESpellComponent.VERBAL],
         related_effect: blockingEffect(turn_state, Infinity),
         related_effect_target_id: target.id,
       }),

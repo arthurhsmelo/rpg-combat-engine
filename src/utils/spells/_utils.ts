@@ -6,6 +6,7 @@ import {
   ISpell,
   Player,
 } from "../../internal";
+import { ESpellComponent } from "../../types/spell.types";
 import { concentration_effect } from "../effects/effects";
 import { use_item } from "../executions/execution_side_effects";
 
@@ -31,6 +32,21 @@ export const use_spell =
         });
       }
     }
+
+    if (
+      spell.components.includes(ESpellComponent.SOMATIC) &&
+      turn_state.active_effects.find((ae) => ae.blocks_somatic)
+    ) {
+      return false;
+    }
+
+    if (
+      spell.components.includes(ESpellComponent.VERBAL) &&
+      turn_state.active_effects.find((ae) => ae.blocks_verbal)
+    ) {
+      return false;
+    }
+
     if (
       has_all_required_materials &&
       turn_state.agent.current_mana >= spell.mana_cost
@@ -46,6 +62,7 @@ export const use_spell =
             duration: spell.casting_time,
             related_effect: casting_effect(spell, target),
             related_effect_target_id: turn_state.agent.id,
+            components: spell.components,
           }),
           turn_state.agent.id
         );

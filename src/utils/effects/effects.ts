@@ -10,6 +10,7 @@ import {
   IEffectTurnActionParams,
   ISpell,
   instanceOfConcentratingEffect,
+  ESpellComponent,
 } from "../../internal";
 
 export const blockingEffect = (
@@ -56,6 +57,7 @@ export const casting_effect = (
   type: EEffectType.CASTING,
   blocks_action: true,
   duration: spell.casting_time,
+  components: spell.components,
   action_after_end: (turn_state) => {
     turn_state.remove_effect(EEffectType.CONCENTRATING, spell_target.id);
     return spell.after_cast({ turn_state, target: spell_target });
@@ -85,6 +87,7 @@ interface IConcentrationParams {
   duration: number;
   related_effect: IEffect;
   related_effect_target_id: string;
+  components: ESpellComponent[];
 }
 
 export const concentration_effect = ({
@@ -92,6 +95,7 @@ export const concentration_effect = ({
   duration,
   related_effect,
   related_effect_target_id,
+  components,
 }: IConcentrationParams): IConcentratingEffect => {
   const concentrating_in = turn_state.active_effects.find(
     (eff) =>
@@ -110,6 +114,7 @@ export const concentration_effect = ({
     type: EEffectType.CONCENTRATING,
     blocks_action: false,
     duration,
+    components,
     related_to: {
       effect_target_id: related_effect_target_id,
       effect_type: related_effect.type,

@@ -1,5 +1,6 @@
 import { Character, IExecuteParams } from "../internal";
 import { TurnState } from "../models/combat/combat";
+import { ESpellComponent } from "./spell.types";
 
 export enum EEffectType {
   "STAGGERED" = "STAGGERED",
@@ -10,8 +11,10 @@ export enum EEffectType {
 }
 export interface IEffect {
   type: EEffectType;
-  blocks_action: boolean;
   duration: number;
+  blocks_action: boolean;
+  blocks_verbal?: boolean;
+  blocks_somatic?: boolean;
 }
 
 export interface IEffectTurnActionParams {
@@ -40,15 +43,26 @@ export const instanceOfEffectWithActionAfterEnd = (
 ): object is IEffectWithActionAfterEnd =>
   object.hasOwnProperty("action_after_end");
 
+export interface IEffectWithComponents extends IEffect {
+  components: ESpellComponent[];
+}
+export const instanceOfEffectWithComponents = (
+  object: Object
+): object is IEffectWithComponents => object.hasOwnProperty("components");
+
 export interface IBurningEffect
   extends IEffectWithDamage,
     IEffectWithActionPerTurn {
   type: EEffectType.BURNING;
 }
-export interface ICastingEffect extends IEffectWithActionAfterEnd {
+export interface ICastingEffect
+  extends IEffectWithComponents,
+    IEffectWithActionAfterEnd {
   type: EEffectType.CASTING;
 }
-export interface IConcentratingEffect extends IEffectWithActionPerTurn {
+export interface IConcentratingEffect
+  extends IEffectWithComponents,
+    IEffectWithActionPerTurn {
   type: EEffectType.CONCENTRATING;
   related_to: {
     effect_type: EEffectType;
