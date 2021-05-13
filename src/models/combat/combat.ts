@@ -12,8 +12,9 @@ import {
   IChildAction,
   instanceOfEffectWithActionPerTurn,
   instanceOfEffectWithActionAfterEnd,
+  EEffectType,
+  instanceOfEffectWithDamage,
 } from "../../internal";
-import { EEffectType } from "../../types/effect.types";
 
 function shuffleArray(array: Array<any>) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -209,6 +210,23 @@ export class Combat {
       (eff) => eff.type === effect.type && eff.char_id === target_id
     );
     if (active_effect) {
+      if (
+        instanceOfEffectWithDamage(active_effect) &&
+        instanceOfEffectWithDamage(effect)
+      ) {
+        const active_effect_dmg = active_effect.damage / active_effect.duration;
+        const effect_dmg = effect.damage / effect.duration;
+        if (effect_dmg > active_effect_dmg) {
+          active_effect.damage = effect.damage;
+          active_effect.duration = effect.duration;
+          if (
+            instanceOfEffectWithActionPerTurn(active_effect) &&
+            instanceOfEffectWithActionPerTurn(effect)
+          ) {
+            active_effect.turn_action = effect.turn_action;
+          }
+        }
+      }
       active_effect.remaining_turns +=
         effect.duration * this.combat_queue.length;
     } else {

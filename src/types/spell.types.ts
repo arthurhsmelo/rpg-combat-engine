@@ -14,7 +14,7 @@ export enum ESpellComponent {
 
 export interface ISpell extends IBaseAction<EActionType.SPELL> {
   type: EActionType.SPELL;
-  related_skill?: ESkillType.SPELL_CASTING;
+  related_skill: ESkillType.SPELL_CASTING;
   mana_cost: number;
   casting_time: number;
   after_cast: (args: IExecuteParams) => ActionResult<EActionType.SPELL>;

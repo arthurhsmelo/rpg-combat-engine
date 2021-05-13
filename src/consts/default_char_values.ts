@@ -19,7 +19,7 @@ export const default_char_values: {
   [key in ECharacterType]: ICharacterDefaultValues;
 } = {
   BOAR: {
-    base_hp: 5,
+    base_hp: 50,
     armor: 0,
     available_actions: [
       {
@@ -36,7 +36,7 @@ export const default_char_values: {
     resistances: {},
   },
   PLAYER: {
-    base_hp: 25,
+    base_hp: 100,
     armor: 0,
     available_actions: [
       {

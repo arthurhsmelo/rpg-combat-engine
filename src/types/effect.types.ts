@@ -25,6 +25,13 @@ export const instanceOfEffectWithActionPerTurn = (
   object: Object
 ): object is IEffectWithActionPerTurn => object.hasOwnProperty("turn_action");
 
+export interface IEffectWithDamage extends IEffect {
+  damage: number;
+}
+export const instanceOfEffectWithDamage = (
+  object: Object
+): object is IEffectWithDamage => object.hasOwnProperty("damage");
+
 export interface IEffectWithActionAfterEnd extends IEffect {
   action_after_end: (turn_state: TurnState) => void;
 }
@@ -33,7 +40,9 @@ export const instanceOfEffectWithActionAfterEnd = (
 ): object is IEffectWithActionAfterEnd =>
   object.hasOwnProperty("action_after_end");
 
-export interface IBurningEffect extends IEffectWithActionPerTurn {
+export interface IBurningEffect
+  extends IEffectWithDamage,
+    IEffectWithActionPerTurn {
   type: EEffectType.BURNING;
 }
 export interface ICastingEffect extends IEffectWithActionAfterEnd {

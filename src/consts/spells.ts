@@ -41,7 +41,7 @@ export const fire_bolt: ISpell = {
   type: EActionType.SPELL,
   related_skill: ESkillType.SPELL_CASTING,
   mana_cost: 0,
-  casting_time: 3,
+  casting_time: 0,
   components: [ESpellComponent.SOMATIC, ESpellComponent.VERBAL],
   after_cast: fire_damage(40, ESkillType.SPELL_CASTING),
   get_available_targets: pipe(hostile(), living),

@@ -33,6 +33,7 @@ const damage_turn_action =
   ({ target }: IEffectTurnActionParams) => {
     if (target) {
       const damage_per_turn = damage / duration;
+      console.log("burn damage", damage_per_turn);
       target.receive_damage(damage_per_turn, ignore_armor);
     }
   };
@@ -44,6 +45,7 @@ export const burning_effect = (
   type: EEffectType.BURNING,
   blocks_action: false,
   duration,
+  damage,
   turn_action: damage_turn_action(damage, duration),
 });
 
