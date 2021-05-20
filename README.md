@@ -109,7 +109,7 @@ Spells tem algumas propriedades além das de uma action comum, são elas:
 - mana_cost, que representa quanto de mana será usado para usar esse spell
 - casting_time, que representa quantos turnos o participante ficará com o efeito de casting aplicado nele, não permitindo nenhuma outra ação.
 - after_cast, que é uma função, tal como a ```execute``` implementando os efeitos colaterais deste spell, como causar dano ou aplicar um efeito em outro participante.
-- components, que é um array podendo conter os componentes VERBAL, SOMATIC e MATERIAL, representando quais componentes são necesários para usar este feitiço, ~~feitiços com componente VERBAL não podem ser usados se o caster estiver silenciado, feitiços com componente SOMATIC não podem ser usados se o caster estiver preso de alguma forma~~ (WIP - Roadmap Conditions), feitiços com componente MATERIAL, exigem que o caster possua aqueles materiais em seu inventário, e são consumidos no uso.
+- components, que é um array podendo conter os componentes VERBAL, SOMATIC e MATERIAL, representando quais componentes são necesários para usar este feitiço, feitiços com componente VERBAL não podem ser usados se o caster estiver silenciado, feitiços com componente SOMATIC não podem ser usados se o caster estiver preso de alguma forma (WIP - Roadmap Conditions), feitiços com componente MATERIAL, exigem que o caster possua aqueles materiais em seu inventário, e são consumidos no uso.
 
 ## Mecânicas de Block e Damage 
 Apesar de como dito acima, as ações implementarem suas próprias formas de computarem os danos e efeitos, algumas regras e fórmulas foram usadas na execution de damage, que é usada em qualquer situação em que o alvo sofrer algum ataque.
@@ -144,7 +144,7 @@ Roadmap
 - [x] Block during casting
 - [x] Concentration
 - [x] Override tick damage
-- [ ] Conditions
+- [x] Conditions
 - [ ] Ação de Stealth com backstab bonus (Usando passive perception, terrain.hiding_multiplier, e facing_direction )
 - [ ] Perks (como bomba de fumaça pra stealth altos, duplo hit pra unarmed)
 - [ ] Bonus action & Reactions **
